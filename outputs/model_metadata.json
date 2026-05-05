@@ -1,0 +1,32 @@
+{
+  "class_names": [
+    "Amoeba",
+    "Euglena",
+    "Hydra",
+    "Paramecium",
+    "Rod_bacteria",
+    "Spherical_bacteria",
+    "Spiral_bacteria",
+    "Yeast"
+  ],
+  "categories": {
+    "Protists": [
+      "Amoeba",
+      "Euglena",
+      "Paramecium"
+    ],
+    "Invertebrates": [
+      "Hydra"
+    ],
+    "Bacteria": [
+      "Rod_bacteria",
+      "Spherical_bacteria",
+      "Spiral_bacteria"
+    ],
+    "Fungi": [
+      "Yeast"
+    ]
+  },
+  "model_type": "RandomForestClassifier",
+  "feature_count": 20
+}

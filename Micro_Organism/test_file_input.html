@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Input Test</title>
+    <style>
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        #testImage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        #fileName {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Input Test</h1>
+    <div class="file-input-wrapper">
+        📁 Choose Image
+        <input type="file" id="testImage" name="image" accept="image/*">
+    </div>
+    <div id="fileName"></div>
+
+    <script>
+        document.getElementById('testImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+                console.log('File selected:', file.name);
+            } else {
+                document.getElementById('fileName').textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>

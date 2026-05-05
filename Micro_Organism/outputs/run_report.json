@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "message": "Training completed with scikit-learn backend.",
+  "backend": "sklearn",
+  "metrics": {
+    "accuracy": 0.24603174603174602,
+    "precision": 0.14912131519274377,
+    "recall": 0.24603174603174602,
+    "f1_score": 0.1620525988173047
+  },
+  "dataset_dir": "dataset",
+  "sample_prediction_image": "dataset\\test\\Amoeba\\Image_10.jpg"
+}

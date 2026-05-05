@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morphological Species Identifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #28a745;
+            background: #f0fff0;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        #image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40,167,69,0.3);
+        }
+
+        .analyze-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+
+        .prediction-icon { background: #28a745; color: white; }
+        .confidence-icon { background: #ffc107; color: white; }
+        .criteria-icon { background: #17a2b8; color: white; }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #007bff;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            transition: width 0.5s ease;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 10px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 20px 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Morphological Species Identifier</h1>
+            <p>Upload microscopic images for AI-powered species classification</p>
+        </div>
+
+        <div class="main-content">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="upload-section" id="uploadSection">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Upload Microscopic Image</h2>
+
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="image">Select Image File:</label>
+                        <div class="file-input-wrapper">
+                            📁 Choose Image
+                            <input type="file" id="image" name="image" accept="image/*" required>
+                        </div>
+                        <div id="fileName" style="margin-top: 10px; color: #666;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ground_truth">Ground Truth (Optional):</label>
+                        <input type="text" id="ground_truth" name="ground_truth"
+                               placeholder="Enter expected species name (e.g., Amoeba)">
+                    </div>
+
+                    <button type="submit" class="analyze-btn" id="analyzeBtn">
+                        🔍 Analyze Species
+                    </button>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your microscopic image...</p>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Analysis Results</h2>
+
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-icon prediction-icon">🦠</div>
+                        <div>
+                            <div class="result-title">Predicted Species</div>
+                            <div class="result-value" id="predictedSpecies">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-icon confidence-icon">📊</div>
+                        <div style="flex: 1;">
+                            <div class="result-title">Model Confidence</div>
+                            <div class="result-value" id="confidence">Loading...</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-icon criteria-icon">📋</div>
+                        <div>
+                            <div class="result-title">Morphological Description</div>
+                            <div id="criteria" style="margin-top: 10px; color: #555; line-height: 1.5;">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item" id="uploadedImageItem" style="text-align: center;">
+                    <h3 style="margin-bottom: 15px; color: #333;">Your Uploaded Image</h3>
+                    <img id="uploadedImage" class="image-preview" alt="Uploaded image">
+                </div>
+
+                <div class="result-item" id="sampleImagesItem" style="text-align: center; display: none;">
+                    <h3 style="margin-bottom: 15px; color: #333;">Similar Samples from Dataset</h3>
+                    <img id="sampleImages" class="image-preview" alt="Similar samples">
+                </div>
+
+                <div class="result-item" id="groundTruthResult" style="display: none;">
+                    <div class="result-header">
+                        <div class="result-icon" style="background: #6f42c1; color: white;">✓</div>
+                        <div>
+                            <div class="result-title">Ground Truth Comparison</div>
+                            <div id="comparisonResult" style="margin-top: 10px; font-size: 1.1em;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            const imageInput = document.getElementById('image');
+            const fileName = document.getElementById('fileName');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const uploadSection = document.getElementById('uploadSection');
+
+            // File input change handler
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    fileName.textContent = `Selected: ${file.name}`;
+                } else {
+                    fileName.textContent = '';
+                }
+            });
+
+            // Drag and drop functionality
+            uploadSection.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadSection.classList.add('dragover');
+            });
+
+            uploadSection.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadSection.classList.remove('dragover');
+            });
+
+            uploadSection.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadSection.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    imageInput.files = files;
+                    fileName.textContent = `Selected: ${files[0].name}`;
+                }
+            });
+
+            // Form submission
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+
+                // Show loading
+                loading.style.display = 'block';
+                analyzeBtn.disabled = true;
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                resultsSection.style.display = 'none';
+
+                // Send request
+                fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    analyzeBtn.disabled = false;
+
+                    if (data.success) {
+                        // Show success message
+                        successMessage.textContent = 'Analysis completed successfully!';
+                        successMessage.style.display = 'block';
+
+                        // Update results
+                        document.getElementById('predictedSpecies').textContent = data.predicted_species;
+                        document.getElementById('confidence').textContent = `${data.confidence}%`;
+                        document.getElementById('confidenceFill').style.width = `${data.confidence}%`;
+                        document.getElementById('criteria').textContent = data.criteria;
+
+                        // Show uploaded image
+                        if (data.image_url) {
+                            document.getElementById('uploadedImage').src = data.image_url;
+                            document.getElementById('uploadedImageItem').style.display = 'block';
+                        }
+
+                        // Show sample images
+                        if (data.sample_image) {
+                            document.getElementById('sampleImages').src = data.sample_image + '?t=' + Date.now();
+                            document.getElementById('sampleImagesItem').style.display = 'block';
+                        }
+
+                        // Show ground truth comparison
+                        if (data.ground_truth) {
+                            document.getElementById('groundTruthResult').style.display = 'block';
+                            const resultDiv = document.getElementById('comparisonResult');
+                            resultDiv.textContent = `Expected: ${data.ground_truth} | Result: ${data.result}`;
+                            resultDiv.style.color = data.result === 'Correct' ? '#28a745' : '#dc3545';
+                        }
+
+                        // Show results section
+                        resultsSection.style.display = 'block';
+
+                        // Scroll to results
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+                    } else {
+                        // Show error
+                        errorMessage.textContent = data.error || 'An error occurred during analysis.';
+                        errorMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    errorMessage.textContent = 'Network error. Please try again.';
+                    errorMessage.style.display = 'block';
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "message": "Training completed with TensorFlow backend.",
+  "backend": "tensorflow",
+  "metrics": {
+    "loss": 0.6349824666976929,
+    "compile_metrics": 1.0
+  },
+  "dataset_dir": "dataset",
+  "sample_prediction_image": "dataset\\test\\bacilli\\bacilli_14.png"
+}
